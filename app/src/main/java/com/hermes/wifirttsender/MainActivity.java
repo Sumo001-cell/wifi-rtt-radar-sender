@@ -13,6 +13,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.Uri;
 import android.net.wifi.rtt.RangingRequest;
 import android.net.wifi.rtt.RangingResult;
 import android.net.wifi.rtt.RangingResultCallback;
@@ -78,8 +79,16 @@ public class MainActivity extends Activity {
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         rttManager = (WifiRttManager) getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
         buildUi();
+        applyLaunchIntent(getIntent());
         requestNeededPermissions();
         updateCapabilityStatus();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        applyLaunchIntent(intent);
     }
 
     @Override
@@ -156,6 +165,16 @@ public class MainActivity extends Activity {
         root.addView(logView);
 
         setContentView(scrollView);
+    }
+
+    private void applyLaunchIntent(Intent intent) {
+        if (intent == null || intent.getData() == null || bridgeInput == null) return;
+        Uri data = intent.getData();
+        String bridge = data.getQueryParameter("bridge");
+        if (bridge != null && bridge.length() > 0) {
+            bridgeInput.setText(bridge);
+            appendLog("Da nhan bridge tu viewer: " + bridge);
+        }
     }
 
     private void updateCapabilityStatus() {
