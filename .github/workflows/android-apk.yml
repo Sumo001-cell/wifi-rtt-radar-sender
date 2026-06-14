@@ -1,0 +1,51 @@
+name: Build Android RTT APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Rename APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk wifi-rtt-radar-debug.apk
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wifi-rtt-radar-debug-apk
+          path: wifi-rtt-radar-debug.apk
+
+      - name: Publish latest APK release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          name: Latest WiFi RTT Radar APK
+          artifacts: wifi-rtt-radar-debug.apk
+          allowUpdates: true
+          removeArtifacts: true
+          replacesArtifacts: true
+          prerelease: true
+          body: |
+            APK tu dong build moi nhat. Cai tren dien thoai Android ho tro WiFi RTT/802.11mc, mo app, tim bridge, chon modem/AP RTT va bat dau do khoang cach.
